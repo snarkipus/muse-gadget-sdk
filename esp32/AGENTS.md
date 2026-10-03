@@ -61,6 +61,7 @@ before adding a feature to one.
 | M5Stack StopWatch | `esp32s3` | `devices/sdkconfig.muse;devices/sdkconfig.muse-m5stack-stopwatch` | manual |
 | M5Stack CoreS3 | `esp32s3` | `devices/sdkconfig.muse;devices/sdkconfig.muse-m5stack-cores3` | `tools/muse/board.sh build cores3` |
 | M5Stack StickC Plus2 | `esp32` | `devices/sdkconfig.muse;devices/sdkconfig.muse-m5stack-stickc-plus2` | manual |
+| M5Stack Core2 | `esp32` | `devices/sdkconfig.muse;devices/sdkconfig.muse-m5stack-core2` | `tools/muse/board.sh build core2` |
 
 The default profile expects the C5 DevKitC-1: an addressable status LED on
 GPIO27, the BOOT button on GPIO28 (active low), 8 MB flash and quad PSRAM.
@@ -201,6 +202,7 @@ flash size and status backend.
    | Espressif `303a:1001`, "USB JTAG/serial debug unit" | the chip's own USB: C5, C6, S3 and the S3 boards with the full UI. Its serial number is the MAC |
    | CH340 (`1a86:7523`) | ideaspark, SenseCAP Indicator, reTerminal E1001 |
    | CH9102 | M5Stack StickC Plus2 |
+   | CP2104 (`10c4:ea60`) | M5Stack Core2 |
    | CH342, two `usbmodem` ports | SenseCAP Watcher: the S3 console is the one ending in `3`, the other is the Himax camera |
 
 3. **Ask the chip.** When you can write to the port (this resets the board):
@@ -210,7 +212,7 @@ flash size and status backend.
    ```
 
    The target narrows it a long way: `esp32c5` is the DevKitC-1, `esp32c6` the
-   Waveshare C6, `esp32` the ideaspark or the StickC Plus2.
+   Waveshare C6, `esp32` the ideaspark, the StickC Plus2 or the Core2.
 
 4. **Fall back to a read-only capture.** If the board is mid-run and you can't
    write to the port, the `## Monitor` recipe below reads it without resetting,
@@ -220,7 +222,7 @@ flash size and status backend.
    | Hint | Board |
    |---|---|
    | `yellow` | M5Stack StopWatch |
-   | `power` | M5Stack CoreS3 |
+   | `power` | M5Stack CoreS3 or Core2 — tell them apart by the target (`esp32s3` or `esp32`) |
    | `front` | M5Stack StickS3, or StickC Plus2 — tell them apart by the port: the StickS3 is native USB, the Plus2 is a CH9102 `usbserial` |
    | `top` | Waveshare ESP32-S3-Touch-AMOLED-1.75C |
    | `bottom right` | AIPI Lite |
