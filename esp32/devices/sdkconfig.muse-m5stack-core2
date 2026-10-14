@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# M5Stack Core2 (K010, v1.0 with the AXP192 PMU): ESP32-D0WDQ6-V3 (classic
-# ESP32, revision 3.0, 16 MB flash, 8 MB quad PSRAM), 2" 320x240 ILI9342C/E
-# touch LCD (FT6336U), NS4168 speaker amp, PDM mic, and a CP2104 USB-UART
-# bridge (10c4:ea60). The touchscreen runs the menus; PWR (the PMU's PEK key)
-# talks. The v1.1 (AXP2101) needs CONFIG_BSP_PMU_AXP2101 instead.
-# Sources: https://github.com/espressif/esp-bsp/tree/master/bsp/m5stack_core_2,
-# https://docs.m5stack.com/en/core/Core2, M5Unified (src/M5Unified.inl,
-# utility/power/AXP192_Class.inl) and M5GFX (src/M5GFX.cpp); esptool
-# flash-id/chip-id on the board for the flash size and chip revision.
-# Load last, after sdkconfig.defaults and sdkconfig.muse.
+# M5Stack Core2 v1.0 (K010): ESP32-D0WDQ6-V3 (classic ESP32, revision 3.0,
+# 16 MB flash, 8 MB quad PSRAM), 2.0" 320x240 ILI9342C touch LCD (FT6336U),
+# SPM1423 PDM mic, NS4168 I2S speaker amp, AXP192 PMU, console on a CP2104
+# or CH9102F USB-UART bridge. Load last, after sdkconfig.muse. Core2 v1.1
+# (AXP2101) is not supported; the board revision is printed on its back
+# sticker or PCB.
+# Sources: https://github.com/espressif/esp-bsp/tree/master/bsp/m5stack_core_2
+# (pins, AXP rail setup, panel/touch/audio init),
+# https://github.com/m5stack/M5Unified (AXP192 registers, mic pins) and
+# https://docs.m5stack.com/en/core/Core2; flash size and chip revision from
+# esptool flash-id/chip-id on the board.
 CONFIG_IDF_TARGET="esp32"
 CONFIG_MUSE_BOARD_M5STACK_CORE2=y
 # Signed apps without Secure Boot use the Secure Boot V2 (RSA) scheme, which
@@ -30,9 +31,6 @@ CONFIG_ESP32_REV_MIN_3=y
 CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
 CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
-# Unused by Muse builds (PWR confirms pairing); GPIO0 is the mic clock and the
-# speaker word select here.
-CONFIG_HOMEHUB_BUTTON_GPIO=0
 
 CONFIG_SPIRAM=y
 # CONFIG_SPIRAM_IGNORE_NOTFOUND is not set
@@ -48,11 +46,6 @@ CONFIG_BTDM_CTRL_MODE_BLE_ONLY=y
 CONFIG_BTDM_CTRL_MODE_BR_EDR_ONLY=n
 CONFIG_BTDM_CTRL_MODE_BTDM=n
 
-# The BSP drives the display, touch, speaker amp and PMU. AXP192 for the v1.0
-# unit; the speaker takes I2S1, leaving I2S0 to the PDM mic (only I2S0 does
-# PDM on the classic ESP32).
+# Core2 v1.0 PMU is the AXP192. Core2 v1.1 (AXP2101) is not supported;
+# the board revision is printed on its back sticker or PCB.
 CONFIG_BSP_PMU_AXP192=y
-CONFIG_BSP_I2S_NUM=1
-
-# LVGL buffers stay small (10 lines, double-buffered) in board_m5stack_core2.c;
-# this BSP has no Kconfig for them.

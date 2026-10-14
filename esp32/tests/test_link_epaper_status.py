@@ -48,14 +48,40 @@ class LinkEpaperStatusTest(unittest.TestCase):
         noise = (ROOT / "main/noise_control.cpp").read_text()
         start = noise.index("#if CONFIG_HOMEHUB_DISPLAY_COMMANDS")
         block = noise[start:noise.index('"display.show_animation"', start)]
-        self.assertIn("led_status_display_bits() == 1", block)
+        self.assertIn("int bits = led_status_display_bits();", block)
         self.assertIn("1 bit per pixel", block)
         self.assertIn("16 bits per pixel (RGB565)", block)
 
+    def test_draw_url_states_the_six_colour_inks(self):
+        noise = (ROOT / "main/noise_control.cpp").read_text()
+        start = noise.index("#if CONFIG_HOMEHUB_DISPLAY_COMMANDS")
+        block = noise[start:noise.index('"display.show_animation"', start)]
+        self.assertIn("bits == 4", block)
+        self.assertIn("six-colour e-paper screen (E Ink Spectra 6)", block)
+        self.assertIn("4 bits per pixel", block)
+        # Every ink the driver dithers to is named with its exact colour.
+        driver = (ROOT / "main/epaper_status.c").read_text()
+        inks = re.findall(r"\{\d, (\d+), (\d+), (\d+)\},\s+// (\w+)", driver)
+        self.assertEqual(len(inks), 6)
+        text = re.sub(r'"\s*"', "", block)
+        for r, g, b, name in inks:
+            self.assertIn(f"{name} #{int(r):02x}{int(g):02x}{int(b):02x}", text)
+        self.assertIn("led_status_display_bits", driver)
+        self.assertIn("return s_panel->bits_per_pixel;", driver)
+        for panel, bits in (("epd_spectra6.c", 4), ("epd_uc8179.c", 1), ("epd_ssd1681.c", 1)):
+            self.assertRegex((ROOT / "main" / panel).read_text(),
+                             rf"\.bits_per_pixel\s*=\s*{bits},", panel)
+
     def test_epaper_replaces_led_status_and_refreshes_after_each_image(self):
         cmake = (ROOT / "main/CMakeLists.txt").read_text()
+        # Each e-paper backend builds the status screen with its panel driver.
         self.assertRegex(cmake, r'if\(CONFIG_HOMEHUB_LED_BACKEND_RETERMINAL_UC8179\)\s*'
-                                r'list\(APPEND GADGET_SRCS "epaper_status.c"\)\s*else\(\)\s*'
+                                r'list\(APPEND GADGET_SRCS "epaper_status.c" "epd_uc8179.c"\)\s*'
+                                r'elseif\(CONFIG_HOMEHUB_LED_BACKEND_RETERMINAL_SPECTRA6\)\s*'
+                                r'list\(APPEND GADGET_SRCS "epaper_status.c" "epd_spectra6.c"\)\s*'
+                                r'elseif\(CONFIG_HOMEHUB_LED_BACKEND_WAVESHARE_SSD1681\)\s*'
+                                r'list\(APPEND GADGET_SRCS "epaper_status.c" "epd_ssd1681.c"\)\s*'
+                                r'else\(\)\s*'
                                 r'list\(APPEND GADGET_SRCS "led_status.c"\)')
         # Both implementations provide the whole display interface.
         header = (ROOT / "main/led_status.h").read_text()
